@@ -1,0 +1,27 @@
+---
+- hosts: webservers
+  become: true
+  tasks:
+    - name: Install apache2 web server
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      notify:
+        - restart apache service
+
+    - name: "Preventing Permit root ssh login"
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PermitRootLogin'
+        line: "PermitRootLogin no"
+      notify:
+        - restart sshd service
+
+  handlers:
+    - name: restart apache2 service
+      service: name=apache2 state=restarted
+
+    - name: restart sshd service
+      service: name=ssh state=restarted
