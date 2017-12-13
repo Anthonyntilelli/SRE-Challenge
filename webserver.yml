@@ -2,26 +2,90 @@
 - hosts: webservers
   become: true
   tasks:
-    - name: Install apache2 web server
-      apt:
-        name: apache2
-        state: present
-        update_cache: yes
-      notify:
-        - restart apache service
+  - assert: { that: "ansible_os_family == 'Debian'" }
+  #tested using Ubuntu
 
-    - name: "Preventing Permit root ssh login"
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        state: present
-        regexp: '^PermitRootLogin'
-        line: "PermitRootLogin no"
-      notify:
-        - restart sshd service
+  - name: "Preventing Permit root ssh login"
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '^PermitRootLogin'
+      line: "PermitRootLogin no"
+    when: ansible_user != "root"
+    notify:
+      - restart sshd service
+
+  #Install Packages
+  - name: Install needed packages
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - 'apache2'
+      - 'python-pip'
+    notify:
+     - restart apache2 service
+  - pip:
+      name: pyOpenSSL
+
+  #Set up firewall
+  - name: synchronizing firewall rules
+    template:
+      src: templates/iptables_rules_save
+      dest: /etc/iptables.up.rules
+      owner: root
+      group: root
+      mode: '0644'
+      backup: yes
+    notify:
+      - apply firewall rules
+
+  - name: Making firewall persistent
+    template:
+      src: templates/iptables_network_script
+      dest: /etc/network/if-pre-up.d/iptables
+      owner: root
+      group: root
+      mode: '0755'
+      backup: no
+    notify:
+      - apply firewall rules
+
+    #Creating selfsigned certificate
+  - name: Make certificate folder
+    file:
+      path:  /etc/ssl/private/webserver
+      state: directory
+      mode: '0700'
+  - name: Create private key
+    openssl_privatekey:
+      path: /etc/ssl/private/webserver/example.com.pem
+      state: present
+  - name: Create CSR
+    openssl_csr:
+      path: /etc/ssl/private/webserver/example.com.csr
+      privatekey_path: /etc/ssl/private/webserver/example.com.pem
+      common_name: www.example.com
+      country_name: US
+      organization_name: example.com
+      email_address: user@example.com
+  - name: Create CA  (self Signed)
+    openssl_certificate:
+      path: /etc/ssl/private/webserver/example.com.crt
+      privatekey_path: /etc/ssl/private/webserver/example.com.pem
+      csr_path: /etc/ssl/private/webserver/example.com.csr
+      provider: selfsigned
 
   handlers:
     - name: restart apache2 service
-      service: name=apache2 state=restarted
-
+      service:
+        name: apache2
+        state: restarted
     - name: restart sshd service
-      service: name=ssh state=restarted
+      service:
+        name: ssh
+        state: restarted
+    - name: apply firewall rules
+      shell: iptables-restore < /etc/iptables.up.rules
+      shell: ip6tables-restore < /etc/iptables.up.rules
