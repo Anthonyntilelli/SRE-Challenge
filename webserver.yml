@@ -17,22 +17,32 @@
 
   #Install Packages
   - name: Install needed packages
-    apt:
-      name: "{{ item }}"
-      state: present
-      update_cache: yes
-    with_items:
-      - 'apache2'
-      - 'python-pip'
-
-  - pip:
-      name: pyOpenSSL
+    block:
+    - apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - 'apache2'
+        - 'python-pip'
+    - pip:
+        name: pyOpenSSL
 
   #Set up firewall
-  - name: synchronizing firewall rules
+  - name: synchronizing firewall rules (ip4)
     template:
-      src: templates/iptables_rules_save
-      dest: /etc/iptables.up.rules
+      src: templates/ip4tables_rules_save
+      dest: /etc/ip4tables.up.rules
+      owner: root
+      group: root
+      mode: '0644'
+      backup: yes
+    notify:
+      - apply firewall rules
+  - name: synchronizing firewall rules (ip6)
+    template:
+      src: templates/ip6tables_rules_save
+      dest: /etc/ip6tables.up.rules
       owner: root
       group: root
       mode: '0644'
@@ -123,6 +133,30 @@
       state: link
     notify:
      - restart apache2 service
+  - name: setting website content
+    template:
+      src: templates/webpage
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: '0744'
+      backup: no
+  - name: Checking webpage
+    block:
+      - uri:
+          url: https://104.131.134.28
+          validate_certs: no
+    rescue:
+       - debug: msg='Website seem to not be working, attempting recovery'
+       - service:
+           name: apache2
+           state: restarted
+       - shell: 'iptables-restore < /etc/ip4tables.up.rules'
+       - shell: 'ip6tables-restore < /etc/ip4tables.up.rules'
+       - debug: msg="Trying again"
+       - uri:
+          url: https://104.131.134.28
+          validate_certs: no
 
   handlers:
     - name: restart apache2 service
@@ -134,5 +168,5 @@
         name: ssh
         state: restarted
     - name: apply firewall rules
-      shell: iptables-restore < /etc/iptables.up.rules
-      shell: ip6tables-restore < /etc/iptables.up.rules
+      shell: 'iptables-restore < /etc/ip4tables.up.rules'
+      shell: 'ip6tables-restore < /etc/ip6tables.up.rules'

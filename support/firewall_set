@@ -9,6 +9,12 @@
 set -euo pipefail
 #IFS=$'\n\t'
 ################################################################################
+#clear iptables
+iptables -P FORWARD ACCEPT 
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables --flush
+iptables -Z
 
 #Allow local host
 iptables -A INPUT -i lo -j ACCEPT
@@ -37,3 +43,5 @@ iptables -A OUTPUT -p tcp --dport 443 -m state --state NEW -j ACCEPT #  allow ht
 iptables -P FORWARD DROP
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
+
+iptables-save > iptables.ip4

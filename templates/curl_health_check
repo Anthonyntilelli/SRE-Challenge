@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+################################################################################
+#: Title       :  check to ensure webpage is working and restarts apache2 is failed 
+#: Date        :
+#: Author      :
+#: Version     :
+#: Description :
+#: Options     :
+#strict mode (http://redsymbol.net/articles/unofficial-bash-strict-mode/)
+set -euo pipefail
+#IFS=$'\n\t'
+################################################################################
+
+#Function
+function fail() {
+  # Outputs error-message and force-quits script
+
+  local -r ERRORCODE="${1:-1}"
+  local -r ERROR_MESSAGE="${2:-"fail called but \"ERROR_MESSAGE\" not set"}"
+  printf "ERROR %d: %s\\n" "$ERRORCODE" "$ERROR_MESSAGE" >&2
+  exit "$ERRORCODE"
+}
