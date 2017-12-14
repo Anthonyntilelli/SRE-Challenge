@@ -55,27 +55,43 @@
     #Creating selfsigned certificate
   - name: Make certificate folder
     file:
-      path:  /etc/ssl/private/webserver
+      path:  /etc/ssl/webserver
       state: directory
-      mode: '0700'
+      mode: '0750'
+      owner: root
+      group: www-data
   - name: Create private key
     openssl_privatekey:
-      path: /etc/ssl/private/webserver/example.com.pem
+      path: /etc/ssl/webserver/example.com.pem
       state: present
   - name: Create CSR
     openssl_csr:
-      path: /etc/ssl/private/webserver/example.com.csr
-      privatekey_path: /etc/ssl/private/webserver/example.com.pem
+      path: /etc/ssl/webserver/example.com.csr
+      privatekey_path: /etc/ssl/webserver/example.com.pem
       common_name: www.example.com
       country_name: US
       organization_name: example.com
       email_address: user@example.com
   - name: Create CA  (self Signed)
     openssl_certificate:
-      path: /etc/ssl/private/webserver/example.com.crt
-      privatekey_path: /etc/ssl/private/webserver/example.com.pem
-      csr_path: /etc/ssl/private/webserver/example.com.csr
+      path: /etc/ssl/webserver/example.com.crt
+      privatekey_path: /etc/ssl/webserver/example.com.pem
+      csr_path: /etc/ssl/webserver/example.com.csr
       provider: selfsigned
+  - name: Make KEY apache readable
+    file:
+      path:  /etc/ssl/webserver/example.com.pem
+      state: file
+      mode: '0740'
+      owner: root
+      group: www-data
+  - name: Make Cert apache readable
+    file:
+      path:  /etc/ssl/webserver/example.com.crt
+      state: file
+      mode: '0740'
+      owner: root
+      group: www-data
 
   handlers:
     - name: restart apache2 service

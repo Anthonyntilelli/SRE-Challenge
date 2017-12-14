@@ -1,8 +1,8 @@
 #Ansible managed
 *filter
-:INPUT DROP [0:0]
+:INPUT DROP [2:56]
 :FORWARD DROP [0:0]
-:OUTPUT DROP [0:0]
+:OUTPUT DROP [8:608]
 -A INPUT -i lo -j ACCEPT
 -A INPUT -p tcp -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -m state --state NEW -j DROP
 -A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
@@ -13,4 +13,8 @@
 -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW -j ACCEPT
 -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A OUTPUT -o lo -j ACCEPT
+-A OUTPUT -p udp -m udp --dport 53 -m state --state NEW -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 53 -m state --state NEW -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 80 -m state --state NEW -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 80 -m state --state NEW -j ACCEPT
 COMMIT
