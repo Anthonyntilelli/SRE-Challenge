@@ -24,8 +24,7 @@
     with_items:
       - 'apache2'
       - 'python-pip'
-    notify:
-     - restart apache2 service
+
   - pip:
       name: pyOpenSSL
 
@@ -92,6 +91,38 @@
       mode: '0740'
       owner: root
       group: www-data
+
+#configure Apache
+  - name: remove 000-default
+    file:
+      path: /etc/apache2/sites-enabled/000-default.conf
+      state: absent
+    notify:
+     - restart apache2 service
+  - name: Enable ssl module
+    apache2_module:
+      state: present
+      name: ssl
+    notify:
+     - restart apache2 service
+  - name: Setting up VirtualHost conf
+    template:
+      src: templates/virtualhost_conf
+      dest: /etc/apache2/sites-available/vh.conf
+      owner: root
+      group: root
+      mode: '0744'
+      backup: no
+    notify:
+     - restart apache2 service
+  - file:
+      src: /etc/apache2/sites-available/vh.conf
+      dest: /etc/apache2/sites-enabled//vh.conf
+      owner: root
+      group: root
+      state: link
+    notify:
+     - restart apache2 service
 
   handlers:
     - name: restart apache2 service
