@@ -141,6 +141,8 @@
       group: root
       mode: '0744'
       backup: no
+  - meta: flush_handlers
+
   - name: Checking webpage
     block:
       - uri:
