@@ -1,5 +1,0 @@
-#!/bin/sh -e
-#Ansible managed
-iptables-restore < /etc/ip4tables.up.rules
-ip6tables-restore < /etc/ip6tables.up.rules
-# https://wiki.debian.org/iptables
