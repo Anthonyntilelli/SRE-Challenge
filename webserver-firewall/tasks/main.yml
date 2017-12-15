@@ -1,5 +1,6 @@
 ---
 # tasks file for webserver-firewall
+- assert: { that: "ansible_os_family == 'Debian'" }
 - name: Allow localhost INPUT
   iptables:
     chain: INPUT

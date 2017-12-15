@@ -1,6 +1,7 @@
 ---
 # tasks file for webserver-https
 #Creating selfsigned certificate
+- assert: { that: "ansible_os_family == 'Debian'" }
 - name: Make certificate folder
   file:
     path:  /etc/ssl/webserver
