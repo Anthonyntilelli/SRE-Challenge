@@ -83,7 +83,7 @@
   notify: 
   - store firewall rules
 
-- name: update store if needed
+- name: updating fire rule store if needed
   meta: flush_handlers
 
 - name: checking for firewall rules (ipv4)
