@@ -1,0 +1,14 @@
+---
+# tasks file for webserver-packages
+ #Install Packages
+- assert: { that: "ansible_os_family == 'Debian'" }
+#tested using Ubuntu
+- apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - 'apache2'
+    - 'python-pip'
+- pip:
+    name: pyOpenSSL

@@ -1,0 +1,111 @@
+---
+# tasks file for webserver-firewall
+- name: Allow localhost INPUT
+  iptables:
+    chain: INPUT
+    jump: ACCEPT
+    in_interface: lo
+    comment: ALLOW INPUT localhost
+  notify: 
+  - store firewall rules
+
+- name: Allow localhost OUTPUT
+  iptables:
+    chain: OUTPUT
+    jump: ACCEPT
+    out_interface: lo
+    comment: ALLOW OUTPUT localhost
+  notify: 
+  - store firewall rules
+
+- name: Allow ESTABLISHED,RELATED inputs
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+    comment: ALLOW ESTABLISHED,RELATED INPUTS
+  notify: 
+  - store firewall rules
+
+- name: Allow NEW Input to 22,80,443
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    ctstate: NEW
+    destination_port: "{{ item.port }}"
+    comment: "{{ item.comment }}"
+    jump: ACCEPT
+  with_items:
+    - { port: '22', comment: 'ALLOW SSH INPUT' }
+    - { port: '80', comment: 'ALLOW HTTP INPUT' }
+    - { port: '443', comment: 'ALLOW HTTPS INPUT' }
+  notify: 
+  - store firewall rules
+
+- name: Allow ESTABLISHED,RELATED output
+  iptables:
+    chain: OUTPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+    comment: ALLOW ESTABLISHED,RELATED OUTPUT
+  notify: 
+  - store firewall rules
+
+- name: Allow 53,80,443 output
+  iptables:
+    chain: OUTPUT
+    protocol: "{{ item.protocol }}"
+    ctstate: NEW
+    destination_port: "{{ item.port }}"
+    comment: "{{ item.comment }}"
+    jump: ACCEPT
+  with_items:
+    - { port: '53', comment: 'ALLOW DNS (udp) OUTPUT', protocol: 'udp' }
+    - { port: '53', comment: 'ALLOW DNS (tcp) OUTPUT', protocol: 'tcp' }
+    - { port: '80', comment: 'ALLOW HTTP OUTPUT', protocol: 'tcp' }
+    - { port: '443', comment: 'ALLOW HTTPS OUTPUT', protocol: 'tcp' }
+  notify: 
+  - store firewall rules
+
+- name: Set Chains as DROP
+  iptables:
+    chain: "{{ item.chain }}"
+    policy: DROP 
+    ip_version: "{{ item.version }}"
+  with_items:
+    - { chain: 'INPUT', version: 'ipv4' }
+    - { chain: 'OUTPUT', version: 'ipv4' }
+    - { chain: 'FORWARD', version: 'ipv4' }
+    - { chain: 'INPUT', version: 'ipv6' }
+    - { chain: 'OUTPUT', version: 'ipv6' }
+    - { chain: 'FORWARD', version: 'ipv6' }
+  notify: 
+  - store firewall rules
+
+- name: update store if needed
+  meta: flush_handlers
+
+- name: checking for firewall rules (ipv4)
+  file:
+    path: /etc/ip4tables.up.rules
+    state: file
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: checking for firewall rules (ipv6)
+  file:
+    path: /etc/ip6tables.up.rules
+    state: file
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Making firewall persistent
+  template:
+    src: templates/iptables_network_script
+    dest: /etc/network/if-pre-up.d/iptables
+    owner: root
+    group: root
+    mode: '0755'
+    backup: no
