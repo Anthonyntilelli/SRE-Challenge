@@ -1,6 +1,0 @@
----
-- hosts: webservers
-  remote_user: root #after first run us ansible user
-  gather_facts: False
-  roles:
-    - setup-user

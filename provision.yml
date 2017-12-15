@@ -1,0 +1,50 @@
+# Run this Playbook if your server does not have python to run ansible and
+# Does not have a dedicated ansible user.
+---
+- hosts: webservers
+  become: true
+  remote_user: root
+  gather_facts: False
+  tasks:
+  # tasks file for setup-user
+  - name: upate repo
+    raw: apt-get update
+  
+  - name: Install python
+    raw: apt-get install python python-apt -y
+
+  - group: #add passwordless_sudo
+      name: passwordless_sudo
+      state: present
+
+  - lineinfile:
+      path: /etc/sudoers
+      state: present
+      line: '%passwordless_sudo ALL=(ALL:ALL) NOPASSWD: ALL'
+      validate: '/usr/sbin/visudo -cf %s'
+
+  - user:
+      name: ansible
+      comment: "ansible user"
+      system: yes
+      group: passwordless_sudo
+
+  - name: Set authorized key for user ubuntu copying it from current user
+    authorized_key:
+      user: ansible
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/webserver_rsa.pub') }}"
+
+  - name: "Preventing Permit root ssh login"
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '^PermitRootLogin'
+      line: "PermitRootLogin no"
+    notify:
+      - restart sshd service
+  handlers:
+  - name: restart sshd service
+    service:
+      name: ssh
+      state: restarted
