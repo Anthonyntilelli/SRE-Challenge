@@ -1,0 +1,17 @@
+#Ansible managed
+<VirtualHost *:80>
+        ServerName www.example.com
+        Redirect / https:{{ ansible_default_ipv4.address }}
+</VirtualHost>
+<IfModule mod_ssl.c>
+        <VirtualHost *:443>
+                ServerName www.example.com
+                ServerAdmin webmaster@localhost
+                DocumentRoot /var/www/html
+                ErrorLog ${APACHE_LOG_DIR}/error.log
+                CustomLog ${APACHE_LOG_DIR}/access.log combined
+                SSLEngine on
+                SSLCertificateFile /etc/ssl/webserver/example.com.crt
+                SSLCertificateKeyFile /etc/ssl/webserver/example.com.pem
+        </VirtualHost>
+</IfModule>

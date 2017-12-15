@@ -1,0 +1,93 @@
+---
+# tasks file for webserver-https
+#Creating selfsigned certificate
+- name: Make certificate folder
+  file:
+    path:  /etc/ssl/webserver
+    state: directory
+    mode: '0750'
+    owner: root
+    group: www-data
+- name: Create private key
+  openssl_privatekey:
+    path: /etc/ssl/webserver/example.com.pem
+    state: present
+- name: Create CSR
+  openssl_csr:
+    path: /etc/ssl/webserver/example.com.csr
+    privatekey_path: /etc/ssl/webserver/example.com.pem
+    common_name: www.example.com
+    country_name: US
+    organization_name: example.com
+    email_address: user@example.com
+- name: Create CA  (self Signed)
+  openssl_certificate:
+    path: /etc/ssl/webserver/example.com.crt
+    privatekey_path: /etc/ssl/webserver/example.com.pem
+    csr_path: /etc/ssl/webserver/example.com.csr
+    provider: selfsigned
+
+- name: Make KEY apache readable
+  file:
+    path:  /etc/ssl/webserver/example.com.pem
+    state: file
+    mode: '0740'
+    owner: root
+    group: www-data
+- name: Make Cert apache readable
+  file:
+    path:  /etc/ssl/webserver/example.com.crt
+    state: file
+    mode: '0740'
+    owner: root
+    group: www-data
+- name: Making CRE apache unreadable
+  file:
+    path:  /etc/ssl/webserver/example.com.csr
+    state: file
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: remove 000-default
+  file:
+    path: /etc/apache2/sites-enabled/000-default.conf
+    state: absent
+  notify:
+    - restart apache2 service
+
+- name: Enable ssl module
+  apache2_module:
+    state: present
+    name: ssl
+  notify:
+    - restart apache2 service
+
+- name: Setting up VirtualHost conf
+  template:
+    src: templates/virtualhost_conf.j2
+    dest: /etc/apache2/sites-available/vh.conf
+    owner: root
+    group: root
+    mode: '0744'
+    backup: no
+  notify:
+    - restart apache2 service
+
+- file:
+    src: /etc/apache2/sites-available/vh.conf
+    dest: /etc/apache2/sites-enabled/vh.conf
+    owner: root
+    group: root
+    state: link
+  notify:
+    - restart apache2 service
+
+- name: setting website content
+  template:
+    src: templates/webpage
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: '0744'
+    backup: no
