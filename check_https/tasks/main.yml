@@ -1,0 +1,17 @@
+---
+# tasks file for check_https
+- assert: { that: "ansible_os_family == 'Debian'" }
+- name: Checking webpage
+  block:
+  - uri:
+      url: https://{{ ansible_default_ipv4.address }}
+      validate_certs: no
+  rescue:
+  - debug: msg='Website seem to not be working, attempting recovery'
+  - service:
+      name: apache2
+      state: restarted
+  - debug: msg="Trying again"
+  - uri:
+      url: https://{{ ansible_default_ipv4.address }}
+      validate_certs: no
