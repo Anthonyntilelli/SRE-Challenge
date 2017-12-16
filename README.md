@@ -18,14 +18,13 @@
 
 ## Files:                 <a name="Files"></a>
   - provision.yml  - playbook attempts to set up requirements
-  - webservers.yml - playbook attempts to set up http server 
+  - webservers.yml - playbook attempts to set up http server
 
 ## Roles                  <a name="Roles"></a>
   - webserver-packages - install needed webserver packages
   - webserver-firewall - sets firewall
   - webserver-https - converts webserver to https and sets webpage
   - check_https - automated test to verify the web server is listening on port 443
-
 
 ## Requirements:          <a name="Requirements"></a>
 
@@ -36,9 +35,7 @@
 #### provision.yml
   - webserver_rsa.pub is required name of ssh key for ansible user
   - To meet industry best practice, it will also prevent root ssh log in
-  - -> Recommend reboot after complete <- 
+  - -> Recommend reboot after complete <-
 
 ## Author:                <a name="Author"></a>
  - Anthony Tilelli
-
-
