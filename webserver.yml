@@ -1,0 +1,10 @@
+---
+- hosts: webservers
+  remote_user: ansible
+  become: yes
+  roles:
+    - webserver-packages
+    - webserver-firewall
+    - webserver-https
+    - check_https
+
