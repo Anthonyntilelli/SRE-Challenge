@@ -42,7 +42,7 @@
     mode: '0740'
     owner: root
     group: www-data
-- name: Making CRE apache unreadable
+- name: Making CSR apache unreadable
   file:
     path:  /etc/ssl/webserver/example.com.csr
     state: file

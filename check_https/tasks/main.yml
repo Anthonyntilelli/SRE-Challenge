@@ -1,5 +1,7 @@
 ---
 # tasks file for check_https
+- name: firing any pending service restarts
+  meta: flush_handlers
 - assert: { that: "ansible_os_family == 'Debian'" }
 - name: Checking webpage
   block:

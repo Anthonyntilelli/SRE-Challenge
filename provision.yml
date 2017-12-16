@@ -6,10 +6,10 @@
   remote_user: root
   gather_facts: False
   tasks:
-  # tasks file for setup-user
+  #WARNING: raw can fail if apt-get is unable to lock needed files.
   - name: upate repo
     raw: apt-get update
-  
+
   - name: Install python
     raw: apt-get install python python-apt -y
 

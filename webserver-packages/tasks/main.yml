@@ -11,4 +11,4 @@
     - 'apache2'
     - 'python-pip'
 - pip:
-    name: pyOpenSSL
+    name: pyOpenSSL  #used by Ansible openssl tools
