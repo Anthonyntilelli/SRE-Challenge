@@ -17,7 +17,7 @@
   - Create an automated test to verify the web server is listening on port 443.
 
 ## Files:                 <a name="Files"></a>
-  - provision.yml  - playbook attempts to set up requirements, for machine that is unable to run ansible
+  - provision.yml  - playbook attempts to set up requirements, for debian based server that is unable to run ansible
   - webservers.yml - playbook attempts to set up http server
 
 ## Roles                  <a name="Roles"></a>
