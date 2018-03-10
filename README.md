@@ -29,6 +29,7 @@
 ## Requirements:          <a name="Requirements"></a>
 
   - Python for ansible to run (python-apt need for --check)
+  - ansible version 2.3 +
   - User "ansible" with sudo rights
   - ssh key pair for ssh
 
